@@ -1,16 +1,9 @@
-package com.api.entity;
+ package com.api.dto;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-
-@Entity
-public class Category extends BaseModel {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+public class CategoryResponse {
+	
 	private Integer id;
+	
 	private String name;
 	private String description;
 	public Integer getId() {
@@ -31,6 +24,6 @@ public class Category extends BaseModel {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
+	
 
 }
