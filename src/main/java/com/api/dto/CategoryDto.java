@@ -1,31 +1,40 @@
- package com.api.entity;
-
-
+package com.api.dto;
 
 import java.util.Date;
 
-import jakarta.persistence.MappedSuperclass;
-
-
-@MappedSuperclass
-public class BaseModel {
+public class CategoryDto {
+	private Integer id;
+	private String name;
+	private String description;
 	private Boolean isActive;
-	private Boolean isDeleted;
+	
     private Integer createdBy;
     private Date createdOn;
     private Integer updatedBy;
     private Date updatedOn;
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getDescription() {
+		return description;
+	}
+	public void setDescription(String description) {
+		this.description = description;
+	}
 	public Boolean getIsActive() {
 		return isActive;
 	}
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
-	}
-	public Boolean getIsDeleted() {
-		return isDeleted;
-	}
-	public void setIsDeleted(Boolean isDeleted) {
-		this.isDeleted = isDeleted;
 	}
 	public Integer getCreatedBy() {
 		return createdBy;
@@ -52,6 +61,5 @@ public class BaseModel {
 		this.updatedOn = updatedOn;
 	}
 
-    
 
 }
