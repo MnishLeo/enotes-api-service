@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.api.dto.CategoryDto;
 import com.api.dto.CategoryResponse;
-
+import com.api.exception.ResourceNotFoundException;
 import com.api.service.CategoryService;
 
 @RestController
@@ -62,12 +62,24 @@ public class CategoryController {
 	}
 
 	@GetMapping("/{id}")
-	public ResponseEntity<?> getCategoryById(@PathVariable Integer id)
+	public ResponseEntity<?> getCategoryById(@PathVariable Integer id) throws Exception {
+//	try{
+//		CategoryDto categoryDto = categoryService.getCategoryById(id);
+//		if (ObjectUtils.isEmpty(categoryDto)) {
+//			return new ResponseEntity<>("Category not found with Id =" + id, HttpStatus.NOT_FOUND);
+//		}
+//		return new ResponseEntity<>(categoryDto, HttpStatus.OK);
+//	}catch(ResourceNotFoundException e)
+//	{
+//	return new ResponseEntity<>(e.getMessage() , HttpStatus.NOT_FOUND);	
+//	} catch(Exception e )
+//	{
+//		return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR); 
+//	}
 
-	{
 		CategoryDto categoryDto = categoryService.getCategoryById(id);
 		if (ObjectUtils.isEmpty(categoryDto)) {
-			return new ResponseEntity<>("Category not found with Id =" + id, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Internal Server error = " + id, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(categoryDto, HttpStatus.OK);
 	}
@@ -78,7 +90,7 @@ public class CategoryController {
 	{
 		CategoryResponse categoryRes = categoryService.getCategoryResponseId(id);
 		if (ObjectUtils.isEmpty(categoryRes)) {
-			return new ResponseEntity<>("Category not found with Id =" + id, HttpStatus.NOT_FOUND);
+			return new ResponseEntity<>("Category not found = " + id, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(categoryRes, HttpStatus.OK);
 	}

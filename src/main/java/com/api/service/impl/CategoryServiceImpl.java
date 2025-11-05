@@ -12,6 +12,7 @@ import com.api.EnotesApiSericeApplication;
 import com.api.dto.CategoryDto;
 import com.api.dto.CategoryResponse;
 import com.api.entity.Category;
+import com.api.exception.ResourceNotFoundException;
 import com.api.repository.CategoryRepository;
 import com.api.service.CategoryService;
 
@@ -89,11 +90,16 @@ public class CategoryServiceImpl implements CategoryService {
 	}
 
 	@Override
-	public CategoryDto getCategoryById(Integer id) {
-		Optional<Category> findByCategoryId = categoryRepository.findByIdAndIsDeletedFalse(id);
-		if (findByCategoryId.isPresent()) {
-			Category cat = findByCategoryId.get();
-			CategoryDto map = modelMapper.map(cat, CategoryDto.class);
+	public CategoryDto getCategoryById(Integer id) throws Exception  {
+		Category category = categoryRepository.findByIdAndIsDeletedFalse(id)
+				.orElseThrow(()-> new ResourceNotFoundException("Category not Found with id = " + id));
+		if (!ObjectUtils.isEmpty(category)) {
+			if(category.getName()==null)
+			{
+				throw new IllegalArgumentException("name is null");
+			}
+//			Category cat = findByCategoryId.get();
+			CategoryDto map = modelMapper.map(category, CategoryDto.class);
 			return map;
 		}
 		return null;
