@@ -15,6 +15,7 @@ import com.api.entity.Category;
 import com.api.exception.ResourceNotFoundException;
 import com.api.repository.CategoryRepository;
 import com.api.service.CategoryService;
+import com.api.util.Validation;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -26,6 +27,10 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Autowired
 	private ModelMapper modelMapper;
+	
+	
+	@Autowired
+	private Validation validation;
 
     CategoryServiceImpl(EnotesApiSericeApplication enotesApiSericeApplication) {
         this.enotesApiSericeApplication = enotesApiSericeApplication;
@@ -33,6 +38,9 @@ public class CategoryServiceImpl implements CategoryService {
 
 	@Override
 	public Boolean saveCategory(CategoryDto categorydto) {
+		
+		//Validation Checking
+		validation.categoryValidation(categorydto);
 
 		Category category = modelMapper.map(categorydto, Category.class);
 		

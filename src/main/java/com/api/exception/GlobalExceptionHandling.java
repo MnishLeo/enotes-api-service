@@ -22,5 +22,9 @@ public class GlobalExceptionHandling {
 	public ResponseEntity<?> resourceNotFoundException(Exception e) {
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	}
+	@ExceptionHandler(exception = ValidationException.class)
+	public ResponseEntity<?> validationException(ValidationException e) {
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+	}
 
 }
