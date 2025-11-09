@@ -1,11 +1,15 @@
 package com.api.entity;
 
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)
 public class Category extends BaseModel {
 
 	@Id
@@ -13,6 +17,20 @@ public class Category extends BaseModel {
 	private Integer id;
 	private String name;
 	private String description;
+	private Boolean isActive;
+	private Boolean isDeleted;
+	public Boolean getIsActive() {
+		return isActive;
+	}
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
+	}
+	public Boolean getIsDeleted() {
+		return isDeleted;
+	}
+	public void setIsDeleted(Boolean isDeleted) {
+		this.isDeleted = isDeleted;
+	}
 	public Integer getId() {
 		return id;
 	}
