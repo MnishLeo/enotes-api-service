@@ -23,4 +23,9 @@ public class GlobalExceptionHandling {
 		return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
 	}
 
+	@ExceptionHandler(exception = ExistDataException.class)
+	public ResponseEntity<?> handleExistDataException(ExistDataException e) {
+		return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+	}
+
 }
