@@ -38,14 +38,10 @@ public class CategoryServiceImpl implements CategoryService {
 	public Boolean saveCategory(CategoryDto categorydto) {
 
 		Boolean exist = categoryRepository.existsByName(categorydto.getName().trim());
-		if(exist)
-		{
-			throw new ExistDataException ("Category Already Present");
+		if (exist) {
+			throw new ExistDataException("Category Already Present");
 		}
-		
-		
-		
-		
+
 		Category category = modelMapper.map(categorydto, Category.class);
 
 		if (ObjectUtils.isEmpty(category.getId())) {
