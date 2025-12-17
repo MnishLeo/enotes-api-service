@@ -1,19 +1,33 @@
 package com.api.service.impl;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
+import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.api.dto.NotesDto;
 import com.api.dto.NotesDto.CategoryDto;
+import com.api.entity.FileDetails;
 import com.api.entity.Notes;
 import com.api.exception.ResourceNotFoundException;
 import com.api.repository.CategoryRepository;
+import com.api.repository.FileRepository;
 import com.api.repository.NotesRepository;
 import com.api.service.NotesService;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import ch.qos.logback.core.util.FileUtil;
 
 @Service
 public class NotesServiceImpl implements NotesService {
@@ -27,16 +41,85 @@ public class NotesServiceImpl implements NotesService {
 	@Autowired
 	private CategoryRepository categoryRepository;
 
-	@Override
-	public Boolean saveNotes(NotesDto notesDto) throws Exception {
+	@Value("${file.upload.path}")
+	private String uploadPath;
 
-		checkCategoryExist(notesDto.getCategory());
-		Notes note = mapper.map(notesDto, Notes.class);
-		Notes saveNotes = notesRepository.save(note);
+	@Autowired
+	private FileRepository fileRepository;
+
+	@Override
+	public Boolean saveNotes(String notes, MultipartFile file) throws Exception {
+		ObjectMapper obj = new ObjectMapper();
+		NotesDto noteDto = obj.readValue(notes, NotesDto.class);
+
+		checkCategoryExist(noteDto.getCategory());
+
+		Notes noteMap = mapper.map(noteDto, Notes.class);
+
+		FileDetails details = saveFileDetails(file);
+		if (!ObjectUtils.isEmpty(details)) {
+			noteMap.setFileDetails(details);
+		} else
+		{
+			noteMap.setFileDetails(null);
+		}
+		Notes saveNotes = notesRepository.save(noteMap);
 		if (!ObjectUtils.isEmpty(saveNotes)) {
 			return true;
 		}
 		return false;
+	}
+
+	private FileDetails saveFileDetails(MultipartFile file) throws IOException {
+		if (!ObjectUtils.isEmpty(file) && !file.isEmpty()) {
+			
+		String originalFileName = 	file.getOriginalFilename();
+			String extention = FilenameUtils.getExtension(file.getOriginalFilename());
+			
+			List<String> extentionAllow = Arrays.asList("pdf","xlsx","jpg","png");
+			if(!extentionAllow.contains(extention))
+			{
+				throw new IllegalArgumentException("invalid file Format ! upload only .pdf , xlsx , jpg");
+			}
+			
+			
+			String rndNumber = UUID.randomUUID().toString();
+			
+			String uploadfileName = rndNumber + "." + extention;
+			
+
+			File savefile = new File(uploadPath);
+			if (!savefile.exists()) {
+				savefile.mkdir();
+
+			}
+			String storePath = uploadPath.concat(uploadfileName);
+			
+			long upload = Files.copy(file.getInputStream(), Paths.get(storePath));
+			if (upload != 0) {
+				FileDetails fileDetails = new FileDetails();
+				fileDetails.setDisplayFileName(getDisplayName(originalFileName));
+				fileDetails.setOriginalFileName(originalFileName);
+				fileDetails.setUploadFileName(uploadfileName);
+				fileDetails.setPath(storePath);
+				fileDetails.setFileSize(file.getSize());
+				FileDetails saveFileDetails = fileRepository.save(fileDetails);
+				return saveFileDetails;
+			}
+
+		}
+		
+		return null;
+	}
+
+	private String getDisplayName(String originalFilename) {
+		String extention = FilenameUtils.getExtension(originalFilename);
+		String fileName = FilenameUtils.getName(originalFilename);
+		if (fileName.length() > 8) {
+			fileName = fileName.substring(0, 7);
+		}
+		fileName = fileName + "." + extention;
+		return fileName;
 	}
 
 	private void checkCategoryExist(CategoryDto category) throws ResourceNotFoundException {
