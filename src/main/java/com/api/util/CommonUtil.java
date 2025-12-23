@@ -1,6 +1,9 @@
 package com.api.util;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
 import com.api.handler.GenericResponse;
@@ -30,5 +33,20 @@ public class CommonUtil {
 				.build();
 		return response.create();
 
+	}
+
+	public static String getContentType(String originalFileName) {
+		String extention = FilenameUtils.getExtension(originalFileName);
+		
+		switch (extention) {
+		case "pdf" : 
+			return "application/pdf";
+		case "jpeg":
+			return "image/jpeg";
+		case "png" :
+			return "image/png";
+			default :
+				return "application/ocet-stream";
+		}
 	}
 }

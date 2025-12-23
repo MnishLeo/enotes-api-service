@@ -1,7 +1,9 @@
 package com.api.service.impl;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.api.dto.NotesDto;
@@ -59,8 +62,7 @@ public class NotesServiceImpl implements NotesService {
 		FileDetails details = saveFileDetails(file);
 		if (!ObjectUtils.isEmpty(details)) {
 			noteMap.setFileDetails(details);
-		} else
-		{
+		} else {
 			noteMap.setFileDetails(null);
 		}
 		Notes saveNotes = notesRepository.save(noteMap);
@@ -72,21 +74,18 @@ public class NotesServiceImpl implements NotesService {
 
 	private FileDetails saveFileDetails(MultipartFile file) throws IOException {
 		if (!ObjectUtils.isEmpty(file) && !file.isEmpty()) {
-			
-		String originalFileName = 	file.getOriginalFilename();
+
+			String originalFileName = file.getOriginalFilename();
 			String extention = FilenameUtils.getExtension(file.getOriginalFilename());
-			
-			List<String> extentionAllow = Arrays.asList("pdf","xlsx","jpg","png");
-			if(!extentionAllow.contains(extention))
-			{
+
+			List<String> extentionAllow = Arrays.asList("pdf", "xlsx", "jpg", "png");
+			if (!extentionAllow.contains(extention)) {
 				throw new IllegalArgumentException("invalid file Format ! upload only .pdf , xlsx , jpg");
 			}
-			
-			
+
 			String rndNumber = UUID.randomUUID().toString();
-			
+
 			String uploadfileName = rndNumber + "." + extention;
-			
 
 			File savefile = new File(uploadPath);
 			if (!savefile.exists()) {
@@ -94,7 +93,7 @@ public class NotesServiceImpl implements NotesService {
 
 			}
 			String storePath = uploadPath.concat(uploadfileName);
-			
+
 			long upload = Files.copy(file.getInputStream(), Paths.get(storePath));
 			if (upload != 0) {
 				FileDetails fileDetails = new FileDetails();
@@ -108,7 +107,7 @@ public class NotesServiceImpl implements NotesService {
 			}
 
 		}
-		
+
 		return null;
 	}
 
@@ -134,5 +133,23 @@ public class NotesServiceImpl implements NotesService {
 		return notesRepository.findAll().stream().map(note -> mapper.map(note, NotesDto.class)).toList();
 
 	}
+
+	@Override
+	public byte[] downloadFile(FileDetails fileDetails) throws Exception {
+		
+	InputStream io = new FileInputStream(fileDetails.getPath());
+	
+		return StreamUtils.copyToByteArray(io);
+	}
+
+	@Override
+	public FileDetails getFileDetails(Integer id) throws Exception {
+		FileDetails fileDtls = fileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("File is not avaiable"));
+	
+		return fileDtls;
+	}
+
+	
+	
 
 }
