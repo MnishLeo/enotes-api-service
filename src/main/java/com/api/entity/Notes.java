@@ -1,9 +1,7 @@
 package com.api.entity;
 
-import org.hibernate.annotations.ManyToAny;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.api.dto.CategoryDto;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
