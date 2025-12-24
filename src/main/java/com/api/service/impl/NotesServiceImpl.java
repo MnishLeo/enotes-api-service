@@ -14,11 +14,15 @@ import org.apache.commons.io.FilenameUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.api.dto.NoteResponse;
 import com.api.dto.NotesDto;
 import com.api.dto.NotesDto.CategoryDto;
 import com.api.entity.FileDetails;
@@ -136,20 +140,33 @@ public class NotesServiceImpl implements NotesService {
 
 	@Override
 	public byte[] downloadFile(FileDetails fileDetails) throws Exception {
-		
-	InputStream io = new FileInputStream(fileDetails.getPath());
-	
+
+		InputStream io = new FileInputStream(fileDetails.getPath());
+
 		return StreamUtils.copyToByteArray(io);
 	}
 
 	@Override
 	public FileDetails getFileDetails(Integer id) throws Exception {
-		FileDetails fileDtls = fileRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("File is not avaiable"));
-	
+		FileDetails fileDtls = fileRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("File is not avaiable"));
+
 		return fileDtls;
 	}
 
-	
-	
+	@Override
+	public NoteResponse getAllNotesByUser(Integer userId, Integer pageNo, Integer pageSize) {
+
+		Pageable pageable = PageRequest.of(pageNo, pageSize);
+
+		Page<Notes> pageNotes = notesRepository.findByCreatedBy(userId, pageable);
+		List<NotesDto> notesDto = pageNotes.get().map(n -> mapper.map(n, NotesDto.class)).toList();
+		NoteResponse noteResponse = NoteResponse.builder().notes(notesDto).pageNo(pageNotes.getNumber())
+				.pageSize(pageNotes.getSize()).totalElement(pageNotes.getTotalElements())
+				.totalPages(pageNotes.getTotalPages()).isFirst(pageNotes.isFirst()).isLast(pageNotes.isLast())
+
+				.build();
+		return noteResponse;
+	}
 
 }
