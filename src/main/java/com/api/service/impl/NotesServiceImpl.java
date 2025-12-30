@@ -21,10 +21,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
-
+import com.api.controller.NotesController;
 import com.api.dto.NoteResponse;
 import com.api.dto.NotesDto;
 import com.api.dto.NotesDto.CategoryDto;
+import com.api.dto.NotesDto.FileDto;
 import com.api.entity.FileDetails;
 import com.api.entity.Notes;
 import com.api.exception.ResourceNotFoundException;
@@ -34,10 +35,12 @@ import com.api.repository.NotesRepository;
 import com.api.service.NotesService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ch.qos.logback.core.util.FileUtil;
 
 @Service
 public class NotesServiceImpl implements NotesService {
+
+	
+	//private final NotesController notesController;
 
 	@Autowired
 	private NotesRepository notesRepository;
@@ -54,6 +57,11 @@ public class NotesServiceImpl implements NotesService {
 	@Autowired
 	private FileRepository fileRepository;
 
+//	NotesServiceImpl(NotesController notesController) {
+//		this.notesController = notesController;
+//	}
+	 
+
 	@Override
 	public Boolean saveNotes(String notes, MultipartFile file) throws Exception {
 		ObjectMapper obj = new ObjectMapper();
@@ -61,19 +69,37 @@ public class NotesServiceImpl implements NotesService {
 
 		checkCategoryExist(noteDto.getCategory());
 
+		if (ObjectUtils.isEmpty(noteDto.getId())) {
+			updateNotes(noteDto, file);
+
+		}
+
 		Notes noteMap = mapper.map(noteDto, Notes.class);
 
 		FileDetails details = saveFileDetails(file);
 		if (!ObjectUtils.isEmpty(details)) {
 			noteMap.setFileDetails(details);
 		} else {
-			noteMap.setFileDetails(null);
+			if(ObjectUtils.isEmpty(noteDto.getId()))
+			{
+				//noteMap.setFileDetails(null);
+			}
+			
 		}
 		Notes saveNotes = notesRepository.save(noteMap);
 		if (!ObjectUtils.isEmpty(saveNotes)) {
 			return true;
 		}
 		return false;
+	}
+
+	private void updateNotes(NotesDto noteDto, MultipartFile file) throws ResourceNotFoundException {
+		Notes existNotes = notesRepository.findById(noteDto.getId())
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid Notes id"));
+
+		if (ObjectUtils.isEmpty(file)) {
+			noteDto.setFileDetails(mapper.map(existNotes.getFileDetails(), FileDto.class));
+		}
 	}
 
 	private FileDetails saveFileDetails(MultipartFile file) throws IOException {
