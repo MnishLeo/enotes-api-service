@@ -20,6 +20,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.api.dto.NoteResponse;
 import com.api.dto.NotesDto;
 import com.api.entity.FileDetails;
+import com.api.exception.ResourceNotFoundException;
 import com.api.service.NotesService;
 import com.api.util.CommonUtil;
 
@@ -73,4 +74,29 @@ public class NotesController {
 //		}
 		return CommonUtil.createBuildResponse(notes, HttpStatus.OK);
 	}
+	
+	@GetMapping("/delete/{id}")
+	public ResponseEntity<?> deleteNotes(@PathVariable Integer id) throws ResourceNotFoundException
+	{
+		notesService.softDelete(id);
+		return CommonUtil.createBuildResponse("Note Delete Succesfully",HttpStatus.OK);
+	}
+	@GetMapping("/restore/{id}")
+	public ResponseEntity<?> restoreNotes(@PathVariable Integer id) throws ResourceNotFoundException
+	{
+		notesService.restoreNotes(id);
+		return CommonUtil.createBuildResponse("Note Restore Succesfully",HttpStatus.OK);
+	}
+	@GetMapping("/recycleBin")
+	public ResponseEntity<?> getUserRecycleBinNotes () throws ResourceNotFoundException
+	{
+		Integer userId = 1;
+		List<NotesDto> notes = notesService.getUserRecycleBinNotes(userId);
+		if(CollectionUtils.isEmpty(notes))
+		{
+			return CommonUtil.createBuildResponse("Notes Not Available in Recycle Bin ", HttpStatus.OK);
+		}
+		return CommonUtil.createBuildResponse(notes, HttpStatus.OK);
+	}
 }
+

@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +67,8 @@ public class NotesServiceImpl implements NotesService {
 	public Boolean saveNotes(String notes, MultipartFile file) throws Exception {
 		ObjectMapper obj = new ObjectMapper();
 		NotesDto noteDto = obj.readValue(notes, NotesDto.class);
+		noteDto.setIsDeleted(false);
+		noteDto.setDeletedOn(null);
 
 		checkCategoryExist(noteDto.getCategory());
 
@@ -185,7 +188,7 @@ public class NotesServiceImpl implements NotesService {
 
 		Pageable pageable = PageRequest.of(pageNo, pageSize);
 
-		Page<Notes> pageNotes = notesRepository.findByCreatedBy(userId, pageable);
+		Page<Notes> pageNotes = notesRepository.findByCreatedByAndIsDeletedFalse(userId, pageable);
 		List<NotesDto> notesDto = pageNotes.get().map(n -> mapper.map(n, NotesDto.class)).toList();
 		NoteResponse noteResponse = NoteResponse.builder().notes(notesDto).pageNo(pageNotes.getNumber())
 				.pageSize(pageNotes.getSize()).totalElement(pageNotes.getTotalElements())
@@ -195,4 +198,30 @@ public class NotesServiceImpl implements NotesService {
 		return noteResponse;
 	}
 
+	@Override
+	public void softDelete(Integer id) throws ResourceNotFoundException {
+		Notes notes = notesRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Invalid id Or id not found in Db"));
+		notes.setIsDeleted(true);
+		notes.setDeletedOn(new Date());
+		notesRepository.save(notes);
+	}
+
+	@Override
+	public void restoreNotes(Integer id) throws ResourceNotFoundException {
+		Notes notes = notesRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Invalid id Or id not found in Db"));
+		notes.setIsDeleted(false);
+		notes.setDeletedOn(null);
+		notesRepository.save(notes);
+		
+	}
+
+	@Override
+	public List<NotesDto> getUserRecycleBinNotes(Integer userId) {
+		List<Notes> recycleNotes  = notesRepository.findByCreatedByAndIsDeletedTrue(userId);
+		List<NotesDto> notesDtoList = recycleNotes.stream().map(note->mapper.map(note, NotesDto.class)).toList();
+		
+		return notesDtoList;
+	}
+
+	
 }
