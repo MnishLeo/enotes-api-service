@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.api.dto.CategoryDto;
 import com.api.dto.CategoryResponse;
-import com.api.exception.ResourceNotFoundException;
+
 
 public interface CategoryService {
 

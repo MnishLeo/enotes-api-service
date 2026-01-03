@@ -9,6 +9,7 @@ import com.api.dto.NotesDto;
 import com.api.entity.FileDetails;
 import com.api.exception.ResourceNotFoundException;
 
+
 public interface NotesService {
 
 	public Boolean saveNotes(String notes, MultipartFile file) throws Exception;
@@ -16,4 +17,7 @@ public interface NotesService {
 	public byte[] downloadFile(FileDetails filedetails) throws  Exception;
 	public FileDetails getFileDetails(Integer id) throws Exception;
 	public NoteResponse getAllNotesByUser(Integer userId, Integer pageNo, Integer pageSize);
+	public void softDelete(Integer id) throws ResourceNotFoundException;
+	public void restoreNotes(Integer id) throws ResourceNotFoundException;
+	public List<NotesDto> getUserRecycleBinNotes(Integer userId);
 }
