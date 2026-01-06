@@ -20,4 +20,6 @@ public interface NotesService {
 	public void softDelete(Integer id) throws ResourceNotFoundException;
 	public void restoreNotes(Integer id) throws ResourceNotFoundException;
 	public List<NotesDto> getUserRecycleBinNotes(Integer userId);
+	public void hardDelete(Integer id) throws ResourceNotFoundException;
+	public void emptyRecycleBin(int userId);
 }

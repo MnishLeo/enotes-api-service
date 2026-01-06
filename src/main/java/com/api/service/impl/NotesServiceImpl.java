@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -19,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,12 +39,10 @@ import com.api.repository.NotesRepository;
 import com.api.service.NotesService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
 @Service
 public class NotesServiceImpl implements NotesService {
 
-	
-	//private final NotesController notesController;
+	// private final NotesController notesController;
 
 	@Autowired
 	private NotesRepository notesRepository;
@@ -61,7 +62,6 @@ public class NotesServiceImpl implements NotesService {
 //	NotesServiceImpl(NotesController notesController) {
 //		this.notesController = notesController;
 //	}
-	 
 
 	@Override
 	public Boolean saveNotes(String notes, MultipartFile file) throws Exception {
@@ -83,11 +83,10 @@ public class NotesServiceImpl implements NotesService {
 		if (!ObjectUtils.isEmpty(details)) {
 			noteMap.setFileDetails(details);
 		} else {
-			if(ObjectUtils.isEmpty(noteDto.getId()))
-			{
-				//noteMap.setFileDetails(null);
+			if (ObjectUtils.isEmpty(noteDto.getId())) {
+				// noteMap.setFileDetails(null);
 			}
-			
+
 		}
 		Notes saveNotes = notesRepository.save(noteMap);
 		if (!ObjectUtils.isEmpty(saveNotes)) {
@@ -200,28 +199,51 @@ public class NotesServiceImpl implements NotesService {
 
 	@Override
 	public void softDelete(Integer id) throws ResourceNotFoundException {
-		Notes notes = notesRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Invalid id Or id not found in Db"));
+		Notes notes = notesRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid id Or id not found in Db"));
 		notes.setIsDeleted(true);
-		notes.setDeletedOn(new Date());
+		notes.setDeletedOn(LocalDateTime.now());
 		notesRepository.save(notes);
 	}
 
 	@Override
 	public void restoreNotes(Integer id) throws ResourceNotFoundException {
-		Notes notes = notesRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Invalid id Or id not found in Db"));
+		Notes notes = notesRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid id Or id not found in Db"));
 		notes.setIsDeleted(false);
 		notes.setDeletedOn(null);
 		notesRepository.save(notes);
-		
+
 	}
 
 	@Override
 	public List<NotesDto> getUserRecycleBinNotes(Integer userId) {
-		List<Notes> recycleNotes  = notesRepository.findByCreatedByAndIsDeletedTrue(userId);
-		List<NotesDto> notesDtoList = recycleNotes.stream().map(note->mapper.map(note, NotesDto.class)).toList();
-		
+		List<Notes> recycleNotes = notesRepository.findByCreatedByAndIsDeletedTrue(userId);
+		List<NotesDto> notesDtoList = recycleNotes.stream().map(note -> mapper.map(note, NotesDto.class)).toList();
+
 		return notesDtoList;
 	}
 
-	
+	@Override
+	public void hardDelete(Integer id) throws ResourceNotFoundException {
+		Notes notes = notesRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Notes not found"));
+		if (notes.getIsDeleted()) {
+			notesRepository.delete(notes);
+
+		} else {
+			throw new IllegalArgumentException("Sorry You cant hard delete directly");
+		}
+
+	}
+
+	@Override
+	public void emptyRecycleBin(int userId) {
+		List<Notes> recycleNotes = notesRepository.findByCreatedByAndIsDeletedTrue(userId);
+		if(!CollectionUtils.isEmpty(recycleNotes))
+		{
+			notesRepository.deleteAll(recycleNotes);
+		}
+		
+	}
+
 }
