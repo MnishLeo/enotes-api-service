@@ -1,5 +1,6 @@
 package com.api.dto;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import com.api.entity.Category;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class NotesDto {
 	private FileDto fileDetails;
 	private Boolean isDeleted;
 
-	private Date deletedOn;
+	private LocalDateTime deletedOn;
 
 	@NoArgsConstructor
 	@AllArgsConstructor
