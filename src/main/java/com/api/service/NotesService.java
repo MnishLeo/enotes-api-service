@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.web.multipart.MultipartFile;
 
+import com.api.dto.FavouriteNoteDto;
 import com.api.dto.NoteResponse;
 import com.api.dto.NotesDto;
 import com.api.entity.FileDetails;
@@ -22,4 +23,8 @@ public interface NotesService {
 	public List<NotesDto> getUserRecycleBinNotes(Integer userId);
 	public void hardDelete(Integer id) throws ResourceNotFoundException;
 	public void emptyRecycleBin(int userId);
+	public void favouriteNote(Integer noteId) throws ResourceNotFoundException;
+	public void unfavouriteNote(Integer noteId) throws ResourceNotFoundException;
+	public List<FavouriteNoteDto> getUserFavouriteNote() throws ResourceNotFoundException;
+	
 }
