@@ -45,13 +45,13 @@ public class NotesController {
 	public ResponseEntity<?> downloadFile(@PathVariable Integer id) throws Exception
 
 	{
-		FileDetails fileDtl =  notesService.getFileDetails(id);
+		FileDetails fileDtl = notesService.getFileDetails(id);
 		byte[] data = notesService.downloadFile(fileDtl);
-		
+
 		HttpHeaders headers = new HttpHeaders();
 		String contentType = CommonUtil.getContentType(fileDtl.getOriginalFileName());
 		headers.setContentType(MediaType.parseMediaType(contentType));
-		headers.setContentDispositionFormData("attachment",fileDtl.getOriginalFileName());
+		headers.setContentDispositionFormData("attachment", fileDtl.getOriginalFileName());
 		return ResponseEntity.ok().headers(headers).body(data);
 	}
 
@@ -63,54 +63,61 @@ public class NotesController {
 		}
 		return CommonUtil.createBuildResponse(notes, HttpStatus.OK);
 	}
+
 	@GetMapping("/user-notes")
-	private ResponseEntity<?> getAllNotesByUser(
-			@RequestParam(name= "pageNo",defaultValue = "0") Integer pageNo,
-			@RequestParam(name="pageSize",defaultValue = "10") Integer pageSize   
-			) {
-	Integer userId =1;
-		NoteResponse  notes = notesService.getAllNotesByUser(userId , pageNo , pageSize);
+	private ResponseEntity<?> getAllNotesByUser(@RequestParam(name = "pageNo", defaultValue = "0") Integer pageNo,
+			@RequestParam(name = "pageSize", defaultValue = "10") Integer pageSize) {
+		Integer userId = 1;
+		NoteResponse notes = notesService.getAllNotesByUser(userId, pageNo, pageSize);
 //		if (CollectionUtils.isEmpty(notes)) {
 //			return ResponseEntity.noContent().build();
 //		}
 		return CommonUtil.createBuildResponse(notes, HttpStatus.OK);
 	}
-	
+
 	@GetMapping("/delete/{id}")
 	public ResponseEntity<?> deleteNotes(@PathVariable Integer id) throws ResourceNotFoundException {
 		notesService.softDelete(id);
 		return CommonUtil.createBuildResponse("Note Delete Succesfully", HttpStatus.OK);
 	}
+
 	@GetMapping("/restore/{id}")
-	public ResponseEntity<?> restoreNotes(@PathVariable Integer id) throws ResourceNotFoundException
-	{
+	public ResponseEntity<?> restoreNotes(@PathVariable Integer id) throws ResourceNotFoundException {
 		notesService.restoreNotes(id);
-		return CommonUtil.createBuildResponse("Note Restore Succesfully",HttpStatus.OK);
+		return CommonUtil.createBuildResponse("Note Restore Succesfully", HttpStatus.OK);
 	}
+
 	@GetMapping("/recycleBin")
-	public ResponseEntity<?> getUserRecycleBinNotes () throws ResourceNotFoundException
-	{
+	public ResponseEntity<?> getUserRecycleBinNotes() throws ResourceNotFoundException {
 		Integer userId = 1;
 		List<NotesDto> notes = notesService.getUserRecycleBinNotes(userId);
-		if(CollectionUtils.isEmpty(notes))
-		{
+		if (CollectionUtils.isEmpty(notes)) {
 			return CommonUtil.createBuildResponse("Notes Not Available in Recycle Bin ", HttpStatus.OK);
 		}
 		return CommonUtil.createBuildResponse(notes, HttpStatus.OK);
 	}
+
 	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> hardDeleteNotes(@PathVariable Integer id) throws ResourceNotFoundException
-	{
+	public ResponseEntity<?> hardDeleteNotes(@PathVariable Integer id) throws ResourceNotFoundException {
 		notesService.hardDelete(id);
-		return CommonUtil.createBuildResponse("Note Delete Succesfully",HttpStatus.OK);
+		return CommonUtil.createBuildResponse("Note Delete Succesfully", HttpStatus.OK);
 	}
-	
+
 	@DeleteMapping("/delete")
-	public ResponseEntity<?> emptyRecycleBin () throws ResourceNotFoundException
-	{
+	public ResponseEntity<?> emptyRecycleBin() throws ResourceNotFoundException {
 		int userId = 1;
 		notesService.emptyRecycleBin(userId);
-		return CommonUtil.createBuildResponse("Note Delete Succesfully",HttpStatus.OK);
+		return CommonUtil.createBuildResponse("Note Delete Succesfully", HttpStatus.OK);
 	}
-}
 
+	@GetMapping("/copy/{id}")
+	public ResponseEntity<?> copyNotes(@PathVariable Integer id) throws ResourceNotFoundException {
+		Boolean copyNote = notesService.copyNotes(id);
+		if (copyNote) {
+			return CommonUtil.createBuildResponse("Copied Success", HttpStatus.CREATED);
+		}
+
+		return CommonUtil.createErrorResponseMessage("copyFailed , Try Again", HttpStatus.INTERNAL_SERVER_ERROR);
+	}
+
+}

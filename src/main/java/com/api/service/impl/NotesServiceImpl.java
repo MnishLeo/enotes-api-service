@@ -279,4 +279,25 @@ public class NotesServiceImpl implements NotesService {
 		return null;
 	}
 
+	@Override
+	public Boolean copyNotes(Integer id) throws ResourceNotFoundException {
+		Notes notes = notesRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Invalid id Or id not found in Db"));
+		
+		Notes copyNotes = Notes.builder()
+				.title(notes.getTitle())
+				.description(notes.getDescription())
+				.category(notes.getCategory())
+				.isDeleted(false)
+				.build();
+		Notes copyNoteSave = notesRepository.save(copyNotes);
+		if(!ObjectUtils.isEmpty(copyNoteSave))
+		{
+			return true;
+		}
+		return false;
+		
+		
+	}
+
 }
