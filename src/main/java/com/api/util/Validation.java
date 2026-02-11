@@ -17,6 +17,7 @@ import com.api.dto.TodoDto.StatusDto;
 import com.api.dto.UserDto;
 import com.api.entity.Role;
 import com.api.enums.TodoStatus;
+import com.api.exception.ExistDataException;
 import com.api.exception.ResourceNotFoundException;
 
 @Component
@@ -24,6 +25,9 @@ public class Validation {
 
 	@Autowired
 	private RoleRepo roleRepo;
+
+	@Autowired
+	private userRepo userRepo;
 
 	public void todoValidation(TodoDto todoDto) throws ResourceNotFoundException {
 		StatusDto reqStatus = todoDto.getStatus();
@@ -50,22 +54,32 @@ public class Validation {
 		}
 		if (!StringUtils.hasText(userDto.getEmail()) || !userDto.getEmail().matches(Constants.EMAIL_REGEX)) {
 			throw new IllegalArgumentException("Email is invalid");
-
-		}
-		if (!StringUtils.hasText(userDto.getMobNo()) || !userDto.getMobNo().matches(Constants.MOB_REGEX)) {
-			throw new IllegalArgumentException("Mobile Number is invalid");
-
-		}
-		if (CollectionUtils.isEmpty(userDto.getRoles())) {
-			throw new IllegalArgumentException("Role id is invalid");
-		} else {
-			List<Integer> roleIds = roleRepo.findAll().stream().map(r -> r.getId()).toList();
-			List<Integer> invalidRoleIds = userDto.getRoles().stream().map(r -> r.getId())
-					.filter(roleId -> roleIds.contains(roleId)).toList();
-			if (CollectionUtils.isEmpty(invalidRoleIds)) {
-				throw new IllegalArgumentException("Role id is invalid" + invalidRoleIds);
+		}else
+			{
+			   Boolean existEmail = userRepo.existsByEmail(userDto.getEmail());	
+			   if(existEmail)
+			   {
+				   throw new ExistDataException("Email is Already Present");
+			   }
 			}
+
+		if(!StringUtils.hasText(userDto.getMobNo())||!userDto.getMobNo().matches(Constants.MOB_REGEX))
+
+	{
+		throw new IllegalArgumentException("Mobile Number is invalid");
+
+	}if(CollectionUtils.isEmpty(userDto.getRoles()))
+	{
+		throw new IllegalArgumentException("Role id is invalid");
+	}else
+	{
+		List<Integer> roleIds = roleRepo.findAll().stream().map(r -> r.getId()).toList();
+		List<Integer> invalidRoleIds = userDto.getRoles().stream().map(r -> r.getId())
+				.filter(roleId -> roleIds.contains(roleId)).toList();
+		if (CollectionUtils.isEmpty(invalidRoleIds)) {
+			throw new IllegalArgumentException("Role id is invalid" + invalidRoleIds);
 		}
 	}
+}
 
 }
