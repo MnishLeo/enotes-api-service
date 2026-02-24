@@ -1,12 +1,13 @@
 package com.api.util;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
+
 import org.springframework.http.ResponseEntity;
 
 import com.api.handler.GenericResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 public class CommonUtil {
 
@@ -23,8 +24,8 @@ public class CommonUtil {
 	}
 
 	public static ResponseEntity<?> createErrorResponse(Object data, HttpStatus status) {
-		GenericResponse response = GenericResponse.builder().httpStatus(status).status("failed").message("failed").data(data)
-				.build();
+		GenericResponse response = GenericResponse.builder().httpStatus(status).status("failed").message("failed")
+				.data(data).build();
 		return response.create();
 	}
 
@@ -37,16 +38,22 @@ public class CommonUtil {
 
 	public static String getContentType(String originalFileName) {
 		String extention = FilenameUtils.getExtension(originalFileName);
-		
+
 		switch (extention) {
-		case "pdf" : 
+		case "pdf":
 			return "application/pdf";
 		case "jpeg":
 			return "image/jpeg";
-		case "png" :
+		case "png":
 			return "image/png";
-			default :
-				return "application/ocet-stream";
+		default:
+			return "application/ocet-stream";
 		}
+	}
+
+	public static String getUrl(HttpServletRequest request) {
+		String apiurl = request.getRequestURL().toString();
+		apiurl = apiurl.replace(request.getServletPath(), "");
+		return apiurl;
 	}
 }

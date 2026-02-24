@@ -1,6 +1,7 @@
 package com.api.service.impl;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.util.ObjectUtils;
 
 import com.api.dto.EmailRequest;
 import com.api.dto.UserDto;
+import com.api.entity.AccountStatus;
 import com.api.entity.Role;
 import com.api.entity.User;
 import com.api.repository.RoleRepo;
@@ -40,6 +42,14 @@ public class UserServiceImpl implements UserService {
 		validation.userValidation(userDto);
 		User user = mapper.map(userDto, User.class);
 		setRole(userDto, user);
+		
+		AccountStatus accountStatus = AccountStatus.builder().
+				isActive(false)
+				.verificationCode(UUID.randomUUID().toString())
+				.build();
+		
+		user.setAccountStatus(accountStatus);
+		
 		User saveUser = userRepo.save(user);
 		if (!ObjectUtils.isEmpty(saveUser)) {
 			// send email
@@ -51,11 +61,14 @@ public class UserServiceImpl implements UserService {
 	}
 
 	private  void emailSend(User saveUser) throws Exception {
-		String message = "Hi, <b>" + saveUser.getFirstName() + "</b> <br> Your account Register successfully"
-				+ "<br> Click the below Link and verify your account <br>" + "<a href = '#' Click Here </a> <br>"
-				+ "Thanks , <br>Enotes.com"
-
-		;
+		String message = "Hi, <b> + [[username]]" 
+		+ "</b> <br> Your account Register successfully"
+		+ "<br> Click the below Link and verify your account <br>" 
+		+ "<a href = '[[url]]'> Click Here </a> <br>"
+		+ "Thanks , <br>Enotes.com";
+		message = message.replace("[[username]]", saveUser.getFirstName());
+		message = message.replace("[[url]]", "http://localhost:8080/api/v1/home/verify?uid=" +saveUser.getId()+"&&code="+saveUser.getAccountStatus().getVerificationCode());
+		
 		EmailRequest emailRequest = EmailRequest.builder().to(saveUser.getEmail())
 				.title("Account Creation confirmation").subject("Account Created Success").msg(message).
 
