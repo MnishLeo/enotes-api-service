@@ -25,7 +25,7 @@ public class UserDto {
 	private String email;
 	private String mobNo;
 	private String password;
-	private List<RoleDto> roles;
+	private List<RoleDto> role;
 	
 	@AllArgsConstructor
 	@NoArgsConstructor
@@ -34,7 +34,7 @@ public class UserDto {
 	@Builder
 	public static class RoleDto{
 		private Integer id;
-		private String  firstName;
+		private String  name;
 	}
 
 
