@@ -68,13 +68,13 @@ public class Validation {
 	{
 		throw new IllegalArgumentException("Mobile Number is invalid");
 
-	}if(CollectionUtils.isEmpty(userDto.getRoles()))
+	}if(CollectionUtils.isEmpty(userDto.getRole()))
 	{
 		throw new IllegalArgumentException("Role id is invalid");
 	}else
 	{
 		List<Integer> roleIds = roleRepo.findAll().stream().map(r -> r.getId()).toList();
-		List<Integer> invalidRoleIds = userDto.getRoles().stream().map(r -> r.getId())
+		List<Integer> invalidRoleIds = userDto.getRole().stream().map(r -> r.getId())
 				.filter(roleId -> roleIds.contains(roleId)).toList();
 		if (CollectionUtils.isEmpty(invalidRoleIds)) {
 			throw new IllegalArgumentException("Role id is invalid" + invalidRoleIds);
