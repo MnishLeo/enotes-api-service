@@ -23,6 +23,7 @@ import com.api.entity.User;
 import com.api.repository.CategoryRepository;
 import com.api.repository.RoleRepo;
 import com.api.repository.userRepo;
+import com.api.service.JwtService;
 import com.api.service.UserService;
 import com.api.util.Validation;
 
@@ -47,9 +48,12 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private AuthenticationManager authenticationManager;
-	
+
 	@Autowired
 	private BCryptPasswordEncoder encodePassord;
+
+	@Autowired
+	private JwtService jwtService;
 
 	UserServiceImpl(CategoryRepository categoryRepository) {
 		this.categoryRepository = categoryRepository;
@@ -106,7 +110,7 @@ public class UserServiceImpl implements UserService {
 				new UsernamePasswordAuthenticationToken(loginRequestDto.getEmail(), loginRequestDto.getPassword()));
 		if (authenticate.isAuthenticated()) {
 			CustomUserDetails cUserDetails = (CustomUserDetails) authenticate.getPrincipal();
-			String token = "123dwdwdwd";
+			String token = jwtService.generateToken(cUserDetails.getUser());
 			LoginResponseDto loginResponseDto = LoginResponseDto.builder().token(token)
 					.userDto(mapper.map(cUserDetails.getUser(), UserDto.class)).
 
